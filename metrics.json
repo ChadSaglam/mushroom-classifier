@@ -1,0 +1,22 @@
+{
+  "test_rows": 2438,
+  "tn": 1263,
+  "fp": 0,
+  "fn": 3,
+  "tp": 1172,
+  "accuracy": 0.9987694831829368,
+  "poisonous_recall": 0.9974468085106383,
+  "model": "RandomForestClassifier",
+  "trees": 100,
+  "max_depth": 10,
+  "features": [
+    "odor",
+    "spore-print-color",
+    "gill-size",
+    "bruises",
+    "habitat",
+    "ring-type"
+  ],
+  "test_split": 0.3,
+  "random_state": 0
+}

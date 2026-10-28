@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A safety-first mushroom classification demo using a Random Forest and the UCI Mushroom dataset.">
+  <title>Mushroom Classifier | Model, data and limitations</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="./">Mushroom Classifier</a>
+    <nav class="resource-links" aria-label="Project resources">
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html" target="_blank" rel="noreferrer">Model</a>
+      <a href="https://archive.ics.uci.edu/dataset/73/mushroom" target="_blank" rel="noreferrer">Dataset</a>
+      <a href="https://github.com/ChadSaglam/mushroom-classifier" target="_blank" rel="noreferrer">Code</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Machine learning demo · No sign-up</p>
+        <h1 id="page-title">A classification demo that keeps the safety warning attached.</h1>
+        <p class="intro">Describe six traits and compare them with 8,124 field-guide records. The model runs entirely in your browser; no image or description is uploaded.</p>
+        <div class="hero-links">
+          <a href="https://archive.ics.uci.edu/dataset/73/mushroom" target="_blank" rel="noreferrer">UCI Mushroom dataset</a>
+          <a href="https://www.vapko.ch/" target="_blank" rel="noreferrer">Swiss mushroom inspection</a>
+        </div>
+      </div>
+      <figure class="hero-photo">
+        <img src="./assets/amanita-muscaria.jpg" alt="A young red Amanita muscaria mushroom with white patches among fallen leaves" width="768" height="1024">
+        <figcaption><strong>Amanita muscaria is toxic.</strong> This photo is illustrative, not an identification reference. Photo: Jay Pea, CC BY-SA 2.0.</figcaption>
+      </figure>
+    </section>
+
+    <aside class="safety-notice" aria-label="Safety warning">
+      <strong>Never use this result to decide whether a mushroom is safe to eat.</strong>
+      <span>The dataset is small and hypothetical, the model makes mistakes, and harmful look-alikes exist. In Switzerland, use an official mushroom inspection service.</span>
+    </aside>
+
+    <nav class="tabs" aria-label="Project sections" role="tablist">
+      <button class="tab active" id="tab-check" type="button" role="tab" aria-selected="true" aria-controls="panel-check" data-panel="check">Check a description</button>
+      <button class="tab" id="tab-limits" type="button" role="tab" aria-selected="false" aria-controls="panel-limits" data-panel="limits">Limitations</button>
+      <button class="tab" id="tab-model" type="button" role="tab" aria-selected="false" aria-controls="panel-model" data-panel="model">Model details</button>
+      <button class="tab" id="tab-credits" type="button" role="tab" aria-selected="false" aria-controls="panel-credits" data-panel="credits">Data & credits</button>
+    </nav>
+
+    <section class="panel" id="panel-check" role="tabpanel" aria-labelledby="tab-check">
+      <div class="section-heading">
+        <p class="eyebrow">Six categorical features</p>
+        <h2>Check a description</h2>
+        <p>Select the closest option for each trait. Unknown traits cannot be entered; that is one of the demo’s limitations.</p>
+      </div>
+      <form id="mushroom-form" class="feature-form">
+        <label>Odour
+          <select name="odor" required>
+            <option value="n">No smell</option><option value="a">Almond</option><option value="l">Anise</option>
+            <option value="f">Foul / rotten</option><option value="y">Fishy</option><option value="s">Spicy</option>
+            <option value="p">Pungent / sharp</option><option value="c">Creosote / tar-like</option><option value="m">Musty</option>
+          </select>
+        </label>
+        <label>Spore print colour
+          <select name="spore-print-color" required>
+            <option value="k">Black</option><option value="n">Brown</option><option value="b">Buff</option>
+            <option value="h">Chocolate</option><option value="r">Green</option><option value="o">Orange</option>
+            <option value="u">Purple</option><option value="w">White</option><option value="y">Yellow</option>
+          </select>
+        </label>
+        <label>Gill size
+          <select name="gill-size" required><option value="b">Broad</option><option value="n">Narrow</option></select>
+        </label>
+        <label>Bruises when touched
+          <select name="bruises" required><option value="t">Yes</option><option value="f">No</option></select>
+        </label>
+        <label>Habitat
+          <select name="habitat" required>
+            <option value="d">Woods</option><option value="g">Grass</option><option value="l">Leaves</option>
+            <option value="m">Meadows</option><option value="p">Paths</option><option value="u">Urban</option><option value="w">Waste ground</option>
+          </select>
+        </label>
+        <label>Ring type
+          <select name="ring-type" required>
+            <option value="n">None</option><option value="p">Pendant</option><option value="e">Evanescent / fading</option>
+            <option value="l">Large</option><option value="f">Flaring</option><option value="c">Cobwebby</option>
+            <option value="s">Sheathing</option><option value="z">Zone</option>
+          </select>
+        </label>
+        <div class="form-actions">
+          <button class="primary-button" id="predict-button" type="submit" disabled>Check description</button>
+          <span id="model-status">Loading the local model…</span>
+        </div>
+      </form>
+      <div id="result" class="result" role="status" aria-live="polite" hidden>
+        <p class="eyebrow" id="result-label"></p>
+        <h3 id="result-title"></h3>
+        <p id="result-copy"></p>
+        <p class="score-note" id="result-score"></p>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-limits" role="tabpanel" aria-labelledby="tab-limits" hidden>
+      <div class="section-heading"><p class="eyebrow">Read before using the demo</p><h2>Why a high score is not a safety answer</h2></div>
+      <div class="card-grid">
+        <article class="info-card"><h3>Hypothetical records</h3><p>The UCI data describes hypothetical samples drawn from a field guide covering 23 species. It is not a catalogue of mushrooms found in Switzerland or elsewhere.</p></article>
+        <article class="info-card"><h3>Only six traits</h3><p>The model ignores cap shape, colour, texture, season, geography and other clues. Two different mushrooms can produce the same six selections.</p></article>
+        <article class="info-card"><h3>False negatives remain</h3><p>In the held-out test split, three poisonous records were classified as edible. A high test score does not remove that risk.</p></article>
+        <article class="info-card"><h3>No photo recognition</h3><p>This page does not analyse a photograph or identify a species. It only compares the selected categories with patterns in the training data.</p></article>
+      </div>
+      <p class="section-note">If food safety is the real question, the safe action is simple: do not eat the mushroom and ask a qualified inspector.</p>
+    </section>
+
+    <section class="panel" id="panel-model" role="tabpanel" aria-labelledby="tab-model" hidden>
+      <div class="section-heading"><p class="eyebrow">Reproducible baseline</p><h2>Random Forest on six features</h2><p>100 trees, maximum depth 10, one-hot encoding and a stratified 70/30 split with random state 0.</p></div>
+      <div class="metric-grid">
+        <article class="metric"><span>Test rows</span><strong id="metric-rows">—</strong></article>
+        <article class="metric"><span>Accuracy</span><strong id="metric-accuracy">—</strong></article>
+        <article class="metric"><span>Poisonous recall</span><strong id="metric-recall">—</strong></article>
+        <article class="metric warning"><span>Poisonous marked edible</span><strong id="metric-fn">—</strong></article>
+      </div>
+      <div class="model-layout">
+        <div>
+          <h3>Held-out confusion matrix</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Actual class</th><th>Predicted edible</th><th>Predicted poisonous</th></tr></thead>
+              <tbody><tr><th>Edible</th><td id="cm-tn">—</td><td id="cm-fp">—</td></tr><tr><th>Poisonous</th><td id="cm-fn">—</td><td id="cm-tp">—</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="plain-card">
+          <h3>What the score means</h3>
+          <p>The displayed score averages the tree-level class estimates. It is not a calibrated probability that a real mushroom is poisonous.</p>
+          <p><a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html" target="_blank" rel="noreferrer">RandomForestClassifier documentation</a></p>
+          <p><a href="https://github.com/ChadSaglam/mushroom-classifier/blob/main/train_model.py" target="_blank" rel="noreferrer">Training and export script</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-credits" role="tabpanel" aria-labelledby="tab-credits" hidden>
+      <div class="section-heading"><p class="eyebrow">Sources and attribution</p><h2>Data, model and photograph</h2></div>
+      <div class="credit-list">
+        <article><h3>Dataset</h3><p><a href="https://archive.ics.uci.edu/dataset/73/mushroom" target="_blank" rel="noreferrer">Mushroom dataset</a>, UCI Machine Learning Repository, 1987. 8,124 rows and 22 categorical features; this demo uses six. Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>. DOI: <a href="https://doi.org/10.24432/C5959T" target="_blank" rel="noreferrer">10.24432/C5959T</a>.</p></article>
+        <article><h3>Model</h3><p><a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html" target="_blank" rel="noreferrer">RandomForestClassifier</a> from scikit-learn. Training happens offline in <code>train_model.py</code>; the browser evaluates the exported trees without a Python runtime.</p></article>
+        <article><h3>Photograph</h3><p><a href="https://commons.wikimedia.org/wiki/File:Young_Amanita_muscaria_(fly_agaric)_-_geograph.org.uk_-_7327975.jpg" target="_blank" rel="noreferrer">Young Amanita muscaria (fly agaric)</a> by Jay Pea, via Wikimedia Commons. Licensed under <a href="https://creativecommons.org/licenses/by-sa/2.0/" target="_blank" rel="noreferrer">CC BY-SA 2.0</a>. The original image is included unchanged.</p></article>
+        <article><h3>Safety resource</h3><p><a href="https://www.vapko.ch/" target="_blank" rel="noreferrer">VAPKO</a>, the Swiss association for official mushroom inspection. Use its inspection information rather than relying on an app for food-safety decisions.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>Built by Chad Saglam</span><span>Educational demo · Not a mushroom identification service</span></footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
