@@ -7,7 +7,7 @@ sdk: static
 app_file: index.html
 pinned: false
 license: mit
-short_description: Safety-first Random Forest demo using the UCI Mushroom dataset
+short_description: Random Forest demo with explicit safety limitations
 ---
 
 # Mushroom Classifier
